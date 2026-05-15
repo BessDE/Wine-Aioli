@@ -98,14 +98,6 @@ button:hover{
   background:var(--wine-dark);
 }
 
-#again{
-  margin-top:16px;
-  background:transparent;
-  color:var(--wine);
-  border:1px solid var(--wine);
-  box-shadow:none;
-}
-
 .card{
   background:var(--card);
   border:1px solid var(--line);
@@ -136,7 +128,10 @@ button:hover{
   font-size:14px;
   margin-top:6px;
 }
-
+.hidden{
+  display:none !important;
+}
+  
 #status{
   color:var(--muted);
   margin-top:12px;
@@ -162,6 +157,9 @@ button:hover{
 <body>
 <main class="container">
 <h1>Find your wine</h1>
+  <button id="toggleFilters" style="display:none;margin-bottom:20px;">
+  Change preferences
+</button>
 
 <form id="quiz">
   <label>
@@ -216,10 +214,8 @@ button:hover{
 <section id="results" hidden>
   <h2>Recommended</h2>
   <div id="cards"></div>
-  <button id="again" type="button">Try again</button>
 </section>
 
-<p class="small" id="status"></p>
 </main>
 
 <script>
@@ -366,8 +362,6 @@ function render(list) {
 }
 
 async function loadWines() {
-  const status = document.getElementById("status");
-  status.textContent = "Loading wines…";
   const res = await fetch(CSV_URL, { cache: "no-store" });
   const text = await res.text();
   const rows = parseCSV(text);
@@ -389,7 +383,6 @@ async function loadWines() {
   image: r[i("Image")] || ""
 })).filter(w => w.name);
   
-  status.textContent = `Loaded ${wines.length} wines.`;
 }
 
 document.getElementById("quiz").addEventListener("submit", e => {
@@ -411,11 +404,16 @@ document.getElementById("quiz").addEventListener("submit", e => {
   .slice(0, 2);
 
   render(top);
+  document.getElementById("quiz").classList.add("hidden");
+document.getElementById("toggleFilters").style.display = "inline-block";
 });
 
-document.getElementById("again").addEventListener("click", () => {
-  document.getElementById("results").hidden = true;
-  document.getElementById("quiz").reset();
+document.getElementById("toggleFilters").addEventListener("click", () => {
+
+  const quiz = document.getElementById("quiz");
+
+  quiz.classList.toggle("hidden");
+
 });
 
 loadWines();
