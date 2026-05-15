@@ -185,10 +185,11 @@ document.getElementById("quiz").addEventListener("submit", e => {
   };
 
   const top = wines
-    .map(w => ({ ...w, score: scoreWine(w, a) }))
-    .filter(w => w.score > 0)
-    .sort((a, b) => b.score - a.score)
-    .slice(0, 2);
+  .filter(w => normalizeText(w.country) === normalizeText(a.country))
+  .map(w => ({ ...w, score: scoreWine(w, a) }))
+  .filter(w => w.score > 0)
+  .sort((a, b) => b.score - a.score)
+  .slice(0, 2);
 
   render(top);
 });
