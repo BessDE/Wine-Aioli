@@ -1,0 +1,180 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Wine Recommendation</title>
+<style>
+body{font-family:system-ui,-apple-system,Arial,sans-serif;margin:0;background:#fafafa}
+.container{max-width:820px;margin:0 auto;padding:16px}
+form{display:grid;gap:14px;margin-top:10px}
+label{display:grid;gap:6px}
+select,button{padding:10px;font-size:16px}
+button{cursor:pointer}
+.card{background:#fff;border:1px solid #ddd;border-radius:12px;padding:14px;margin-top:12px}
+.small{color:#555;font-size:14px;margin-top:6px}
+</style>
+</head>
+
+<body>
+<main class="container">
+<h1>Find your wine</h1>
+
+<form id="quiz">
+  <label>
+    1) What wine are you in the mood for?
+    <select name="color" required>
+      <option value="">Select…</option>
+      <option value="Red"> Red</option>
+      <option value="White"> White</option>
+      <option value="Rosé"> Rosé</option>
+      <option value="Sparkling"> Sparkling</option>
+    </select>
+  </label>
+
+  <label>
+    2) How would you like your wine to feel?
+    <select name="body" required>
+      <option value="">Select…</option>
+      <option value="light"> Fresh & light</option>
+      <option value="medium"> Balanced</option>
+      <option value="full"> Rich & bold</option>
+      <option value="medium-full"> Velvety depth</option>
+    </select>
+  </label>
+
+  <label>
+    3) Which flavors do you enjoy most?
+    <select name="Profile" required>
+       <option value="">Select…</option>
+    <option value="fruity"> Fruity & fresh</option>
+    <option value="floral"> Floral & aromatic</option>
+    <option value="earthy"> Earthy & savory</option>
+    <option value="spicy"> Spicy & peppery</option>
+    <option value="oaky"> Oaky & vanilla</option>
+    <option value="mineral"> Mineral & fresh</option>
+    </select>
+  </label>
+
+  <label>
+    4) How adventurous are you feeling today?
+    <select name="Region" required>
+      <option value="">Select…</option>
+      <option value="classic"> Classic & familiar</option>
+      <option value="new"> Something new</option>
+    </select>
+  </label>
+
+  <button type="submit">Recommend 2 wines</button>
+</form>
+
+<section id="results" hidden>
+  <h2>Recommended</h2>
+  <div id="cards"></div>
+  <button id="again" type="button">Try again</button>
+</section>
+
+<p class="small" id="status"></p>
+</main>
+
+<script>
+const CSV_URL = "https://docs.google.com/spreadsheets/d/e/2PACX-1vTjzYXlYV5dF8l1rWFShjOeUWi45piryXjR3B0bVshNkt3iIc-imO4lVYYfXiDn-kwKgVXfwoQA-NBE/pub?output=csv";
+
+let wines = [];
+
+function parseCSV(text) {
+  const rows = [];
+  let row = [], cell = "", inQuotes = false;
+  for (let i = 0; i < text.length; i++) {
+    const c = text[i], n = text[i+1];
+    if (c === '"') {
+      if (inQuotes && n === '"') { cell += '"'; i++; }
+      else inQuotes = !inQuotes;
+      continue;
+    }
+    if (!inQuotes && c === ",") { row.push(cell); cell = ""; continue; }
+    if (!inQuotes && (c === "\n" || c === "\r")) {
+      if (c === "\r" && n === "\n") i++;
+      row.push(cell);
+      if (row.some(v => v !== "")) rows.push(row);
+      row = []; cell = "";
+      continue;
+    }
+    cell += c;
+  }
+  row.push(cell);
+  if (row.some(v => v !== "")) rows.push(row);
+  return rows;
+}
+
+function normalizeProfile(p) {
+  if (!p) return [];
+  return String(p).split(",").map(x => x.trim()).filter(Boolean);
+}
+
+function scoreWine(w, a) {
+  let s = 0;
+  if (a.body === "Any" || w.body === a.body) s += 2;
+  if (w.profile.includes(a.tag)) s += 3;
+  return s;
+}
+
+function render(list) {
+  const cards = document.getElementById("cards");
+  cards.innerHTML = "";
+  list.forEach(w => {
+    const div = document.createElement("div");
+    div.className = "card";
+    div.innerHTML = `
+      <strong>${w.name}</strong> <span class="small">(${w.year || "NV"})</span>
+      <div class="small">${w.region} • ${w.grape || "—"} • ${w.body} body</div>
+      <div>${w.description || ""}</div>
+    `;
+    cards.appendChild(div);
+  });
+  document.getElementById("results").hidden = false;
+}
+
+async function loadWines() {
+  const status = document.getElementById("status");
+  status.textContent = "Loading wines…";
+  const res = await fetch(CSV_URL, { cache: "no-store" });
+  const text = await res.text();
+  const rows = parseCSV(text);
+  const header = rows[0];
+  const i = h => header.indexOf(h);
+
+  wines = rows.slice(1).map(r => ({
+    name: r[i("Name")] || "",
+    year: r[i("Year")] || "",
+    region: r[i("Region")] || "",
+    color: r[i("Color")] || "",
+    dryness: r[i("Dryness")] || "",
+    body: r[i("Body")] || "",
+    profile: normalizeProfile(r[i("Profile")]),
+    grape: r[i("Grape")] || "",
+    description: r[i("Description")] || ""
+  })).filter(w => w.name);
+
+  status.textContent = `Loaded ${wines.length} wines.`;
+}
+
+document.getElementById("quiz").addEventListener("submit", e => {
+  e.preventDefault();
+  const d = new FormData(e.target);
+  const a = { body: d.get("body"), tag: d.get("tag") };
+  const top = wines.map(w => ({...w, score: scoreWine(w,a)}))
+                   .sort((a,b)=>b.score-a.score)
+                   .slice(0,2);
+  render(top);
+});
+
+document.getElementById("again").addEventListener("click", () => {
+  document.getElementById("results").hidden = true;
+  document.getElementById("quiz").reset();
+});
+
+loadWines();
+</script>
+</body>
+</html>
