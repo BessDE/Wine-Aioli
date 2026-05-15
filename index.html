@@ -109,7 +109,8 @@ function parseCSV(text) {
   return rows;
 }
 
-return String(v || "").trim().toLowerCase();
+function normalizeText(v) {
+  return String(v || "").trim().toLowerCase();
 }
 
 function normalizeProfile(p) {
