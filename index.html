@@ -180,8 +180,8 @@ async function loadWines() {
   body: normalizeText(r[i("Body")]),
   profile: normalizeProfile(r[i("Profile")]),
   grape: r[i("Grape")] || "",
-  description: r[i("Description")] || ""
-  image: r[i("Image")] || "",
+  description: r[i("Description")] || "",
+  image: r[i("Image")] || ""
 })).filter(w => w.name);
   
   status.textContent = `Loaded ${wines.length} wines.`;
