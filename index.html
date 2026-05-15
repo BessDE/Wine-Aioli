@@ -141,57 +141,51 @@ function scoreWine(w, a) {
 function render(list) {
   const cards = document.getElementById("cards");
   cards.innerHTML = "";
+
   list.forEach(w => {
     const div = document.createElement("div");
     div.className = "card";
-   div.innerHTML = `
-  <div style="display:flex;gap:16px;align-items:flex-start;">
 
-    ${w.image ? `
-      <img 
-        src="${w.image}" 
-        alt="${w.name}" 
-        style="
-          width:140px;
-          height:220px;
-          object-fit:contain;
-          border-radius:10px;
-          flex-shrink:0;
-        ">
-    ` : ""}
+    div.innerHTML = `
+      <div style="display:flex;gap:16px;align-items:flex-start;">
 
-    <div>
+        ${w.image ? `
+          <img 
+            src="${w.image}" 
+            alt="${w.name}" 
+            style="
+              width:140px;
+              height:220px;
+              object-fit:contain;
+              border-radius:10px;
+              flex-shrink:0;
+            ">
+        ` : ""}
 
-      <strong style="font-size:20px;">
-        ${w.name}
-      </strong>
+        <div>
+          <strong style="font-size:20px;">
+            ${w.name}
+          </strong>
 
-      <div class="small" style="margin-top:6px;">
-        ${w.year || "NV"} • ${w.country} • ${w.region}
+          <div class="small" style="margin-top:6px;">
+            ${w.year || "NV"} • ${w.country} • ${w.region}
+          </div>
+
+          <div class="small">
+            ${w.grape || "—"} • ${w.body} body
+          </div>
+
+          <div style="margin-top:12px;line-height:1.5;">
+            ${w.description || ""}
+          </div>
+        </div>
+
       </div>
+    `;
 
-      <div class="small">
-        ${w.grape || "—"} • ${w.body} body
-      </div>
-
-      <div style="margin-top:12px;line-height:1.5;">
-        ${w.description || ""}
-      </div>
-
-    </div>
-
-  </div>
-`;
-  <span class="small">(${w.year || "NV"})</span>
-
-  <div class="small">
-    ${w.country} • ${w.region} • ${w.grape || "—"} • ${w.body} body
-  </div>
-
-  <div>${w.description || ""}</div>
-`;
     cards.appendChild(div);
   });
+
   document.getElementById("results").hidden = false;
 }
 
