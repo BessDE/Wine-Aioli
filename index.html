@@ -5,14 +5,14 @@
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>Wine Recommendation</title>
 <style>
-@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=Playfair+Display:wght@600;700&display=swap');
-
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=Playfair+Display:wght@600;700&family=Pacifico&display=swap');
+  
 :root{
   --bg:#e8d5c0;
-  --card:#fffaf5;
+  --card:#f5e7e0;
   --wine:#7b1e2b;
   --wine-dark:#4f1018;
-  --text:#2b2421;
+  --text:#581334;
   --muted:#7b6f68;
   --line:#e5d8ce;
 }
@@ -317,7 +317,13 @@ function render(list) {
             ${w.grape || "—"} • ${w.body} body
           </div>
 
-          <div style="margin-top:12px;line-height:1.5;">
+         <div style="
+  margin-top:12px;
+  line-height:1.7;
+  font-size:15px;
+  color:#3c312d;
+  font-family:'Pacifico', cursive;
+">
             ${w.description || ""}
           </div>
         </div>
