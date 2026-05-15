@@ -124,10 +124,17 @@ function normalizeProfile(p) {
 function scoreWine(w, a) {
   let s = 0;
 
-  if (normalizeText(w.color) === normalizeText(a.color)) s += 5;
-  if (normalizeText(w.body) === normalizeText(a.body)) s += 3;
-  if (w.profile.includes(normalizeText(a.profile))) s += 5;
-  if (normalizeText(w.country) === normalizeText(a.country)) s += 4;
+  // 1. strongest filter: color
+  if (normalizeText(w.color) === normalizeText(a.color)) s += 100;
+
+  // 2. country
+  if (normalizeText(w.country) === normalizeText(a.country)) s += 50;
+
+  // 3. body
+  if (normalizeText(w.body) === normalizeText(a.body)) s += 20;
+
+  // 4. weakest: profile
+  if (w.profile.includes(normalizeText(a.profile))) s += 10;
 
   return s;
 }
@@ -185,7 +192,6 @@ document.getElementById("quiz").addEventListener("submit", e => {
   };
 
   const top = wines
-  .filter(w => normalizeText(w.country) === normalizeText(a.country))
   .map(w => ({ ...w, score: scoreWine(w, a) }))
   .filter(w => w.score > 0)
   .sort((a, b) => b.score - a.score)
