@@ -109,18 +109,27 @@ function parseCSV(text) {
   return rows;
 }
 
+return String(v || "").trim().toLowerCase();
+}
+
 function normalizeProfile(p) {
   if (!p) return [];
-  return String(p).split(",").map(x => x.trim()).filter(Boolean);
+  return String(p)
+    .split(",")
+    .map(x => normalizeText(x))
+    .filter(Boolean);
 }
 
 function scoreWine(w, a) {
   let s = 0;
-  if (a.body === "Any" || w.body === a.body) s += 2;
-  if (w.profile.includes(a.tag)) s += 3;
+
+  if (normalizeText(w.color) === normalizeText(a.color)) s += 5;
+  if (normalizeText(w.body) === normalizeText(a.body)) s += 3;
+  if (w.profile.includes(normalizeText(a.profile))) s += 5;
+  if (normalizeText(w.country) === normalizeText(a.country)) s += 4;
+
   return s;
 }
-
 function render(list) {
   const cards = document.getElementById("cards");
   cards.innerHTML = "";
@@ -147,27 +156,39 @@ async function loadWines() {
   const i = h => header.indexOf(h);
 
   wines = rows.slice(1).map(r => ({
-    name: r[i("Name")] || "",
-    year: r[i("Year")] || "",
-    region: r[i("Region")] || "",
-    color: r[i("Color")] || "",
-    dryness: r[i("Dryness")] || "",
-    body: r[i("Body")] || "",
-    profile: normalizeProfile(r[i("Profile")]),
-    grape: r[i("Grape")] || "",
-    description: r[i("Description")] || ""
-  })).filter(w => w.name);
-
+  name: r[i("Name")] || "",
+  year: r[i("Year")] || "",
+  country: r[i("Country")] || "",
+  region: r[i("Region")] || "",
+  color: r[i("Color")] || "",
+  dryness: r[i("Dryness")] || "",
+  body: normalizeText(r[i("Body")]),
+  profile: normalizeProfile(r[i("Profile")]),
+  grape: r[i("Grape")] || "",
+  description: r[i("Description")] || ""
+})).filter(w => w.name);
+  
   status.textContent = `Loaded ${wines.length} wines.`;
 }
 
 document.getElementById("quiz").addEventListener("submit", e => {
   e.preventDefault();
+
   const d = new FormData(e.target);
-  const a = { body: d.get("body"), tag: d.get("tag") };
-  const top = wines.map(w => ({...w, score: scoreWine(w,a)}))
-                   .sort((a,b)=>b.score-a.score)
-                   .slice(0,2);
+
+  const a = {
+    color: d.get("color"),
+    body: d.get("body"),
+    profile: d.get("Profile"),
+    country: d.get("Country")
+  };
+
+  const top = wines
+    .map(w => ({ ...w, score: scoreWine(w, a) }))
+    .filter(w => w.score > 0)
+    .sort((a, b) => b.score - a.score)
+    .slice(0, 2);
+
   render(top);
 });
 
