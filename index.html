@@ -145,10 +145,17 @@ function render(list) {
     const div = document.createElement("div");
     div.className = "card";
     div.innerHTML = `
-      <strong>${w.name}</strong> <span class="small">(${w.year || "NV"})</span>
-      <div class="small">${w.region} • ${w.grape || "—"} • ${w.body} body</div>
-      <div>${w.description || ""}</div>
-    `;
+  ${w.image ? `<img src="${w.image}" alt="${w.name}" style="width:100%;max-height:260px;object-fit:contain;border-radius:10px;margin-bottom:10px;">` : ""}
+
+  <strong>${w.name}</strong>
+  <span class="small">(${w.year || "NV"})</span>
+
+  <div class="small">
+    ${w.country} • ${w.region} • ${w.grape || "—"} • ${w.body} body
+  </div>
+
+  <div>${w.description || ""}</div>
+`;
     cards.appendChild(div);
   });
   document.getElementById("results").hidden = false;
@@ -174,6 +181,7 @@ async function loadWines() {
   profile: normalizeProfile(r[i("Profile")]),
   grape: r[i("Grape")] || "",
   description: r[i("Description")] || ""
+  image: r[i("Image")] || "",
 })).filter(w => w.name);
   
   status.textContent = `Loaded ${wines.length} wines.`;
